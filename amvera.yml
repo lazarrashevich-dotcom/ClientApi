@@ -4,10 +4,10 @@ meta:
     name: dotnet
     version: "8.0"
 build:
-  image: mcr.microsoft.com/dotnet/sdk:8.0
+  dockerfile: false
 run:
   image: mcr.microsoft.com/dotnet/sdk:8.0
-  buildFileName: bin/clientapi
+  buildFileName: bin/properties
   persistenceMount: /data
   containerPort: "80"
   servicePort: "80"

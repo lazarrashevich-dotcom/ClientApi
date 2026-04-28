@@ -30,4 +30,4 @@ app.UseAuthorization();
 app.MapControllers();
 app.MapGet("/", () => Results.Redirect("/swagger"));
 
-app.Run("http://0.0.0.0:80");
+app.Run();

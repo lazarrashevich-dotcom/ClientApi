@@ -1,0 +1,45 @@
+@ClientApi_HostAddress = http://localhost:5000
+
+### Получить всех клиентов
+GET {{ClientApi_HostAddress}}/api/clients
+Accept: application/json
+
+###
+
+### Получить клиента по ID
+GET {{ClientApi_HostAddress}}/api/clients/1
+Accept: application/json
+
+###
+
+### Добавить клиента
+POST {{ClientApi_HostAddress}}/api/clients
+Content-Type: application/json
+
+{
+  "firstName": "Иван",
+  "lastName": "Петров",
+  "email": "ivan.petrov@example.com",
+  "balance": 75000,
+  "accountAgeDays": 400,
+  "status": "Active",
+  "hasOverduePayments": false
+}
+
+###
+
+### Анализ клиента (вычисляемый ответ)
+POST {{ClientApi_HostAddress}}/api/clients/analyze
+Content-Type: application/json
+
+{
+  "firstName": "Мария",
+  "lastName": "Сидорова",
+  "email": "maria@example.com",
+  "balance": 120000,
+  "accountAgeDays": 500,
+  "status": "Active",
+  "hasOverduePayments": false
+}
+
+###

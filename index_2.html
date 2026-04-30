@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Client Intelligence Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0a0a0f;--surface:#111118;--surface2:#1a1a24;--border:#2a2a3a;
+    --accent:#6c63ff;--text:#e8e8f0;--text-dim:#6b6b80;--text-mid:#9999b0;
+    --green:#00d4aa;--red:#ff6b6b;--gold:#ffd166;
+    --mono:'DM Mono',monospace;--sans:'Syne',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13px;min-height:100vh}
+  body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(108,99,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(108,99,255,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
+  .header{position:relative;z-index:10;border-bottom:1px solid var(--border);padding:18px 28px;display:flex;align-items:center;gap:12px;background:rgba(10,10,15,0.95)}
+  .logo{font-family:var(--sans);font-size:17px;font-weight:800}
+  .logo span{color:var(--accent)}
+  .dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2s infinite;margin-left:auto}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+  .online{color:var(--green);font-size:11px;letter-spacing:.1em;text-transform:uppercase}
+  .main{position:relative;z-index:1;display:grid;grid-template-columns:350px 1fr;min-height:calc(100vh - 61px)}
+  .lp{border-right:1px solid var(--border);padding:18px;display:flex;flex-direction:column;gap:14px;background:var(--surface);overflow-y:auto;max-height:calc(100vh - 61px)}
+  .plabel{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--text-dim);margin-bottom:5px}
+  .fg{display:flex;flex-direction:column;gap:5px}
+  .fl{font-size:11px;color:var(--text-mid)}
+  input,select{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--mono);font-size:13px;padding:9px 11px;width:100%;outline:none;transition:border-color .2s}
+  input:focus,select:focus{border-color:var(--accent)}
+  input[type=number]{-moz-appearance:textfield}
+  input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
+  .cbrow{display:flex;align-items:center;gap:10px;padding:9px 11px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;cursor:pointer;user-select:none}
+  .cbrow input[type=checkbox]{width:15px;height:15px;accent-color:var(--accent);cursor:pointer}
+  .hr{height:1px;background:var(--border)}
+  .btn{padding:11px 18px;border-radius:7px;border:none;font-family:var(--sans);font-size:13px;font-weight:700;letter-spacing:.04em;cursor:pointer;transition:all .2s;text-transform:uppercase;width:100%}
+  .btnp{background:var(--accent);color:white}
+  .btnp:hover{background:#7c74ff;transform:translateY(-1px)}
+  .btnp:disabled{opacity:.4;cursor:not-allowed;transform:none}
+  .btns{background:transparent;border:1px solid var(--border);color:var(--text-mid);margin-top:7px}
+  .btns:hover{border-color:var(--accent);color:var(--accent)}
+  .badges{display:flex;gap:7px;flex-wrap:wrap}
+  .badge{display:flex;align-items:center;gap:5px;padding:4px 9px;border-radius:20px;border:1px solid var(--border);font-size:10px;letter-spacing:.05em;text-transform:uppercase}
+  .bdot{width:5px;height:5px;border-radius:50%}
+  .ok{color:var(--green);border-color:rgba(0,212,170,.2)}.ok .bdot{background:var(--green);box-shadow:0 0 6px var(--green)}
+  .err{color:var(--red);border-color:rgba(255,107,107,.2)}.err .bdot{background:var(--red)}
+  .wait{color:var(--text-dim)}.wait .bdot{background:var(--text-dim)}
+  .rp{padding:18px;overflow-y:auto;max-height:calc(100vh - 61px);display:flex;flex-direction:column;gap:16px}
+  .stitle{font-family:var(--sans);font-size:13px;font-weight:700;color:var(--text);margin-bottom:9px;display:flex;align-items:center;gap:8px}
+  .stitle::after{content:'';flex:1;height:1px;background:var(--border)}
+  .fcard{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px}
+  .frow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0}
+  .fnode{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:11px;text-align:center;transition:all .3s}
+  .fnode.active{border-color:var(--accent);color:var(--accent);background:rgba(108,99,255,.08)}
+  .fnode.done{border-color:var(--green);color:var(--green);background:rgba(0,212,170,.06)}
+  .farrow{color:var(--text-dim);font-size:13px}
+  .rcard{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;display:none}
+  .rcard.v{display:block}
+  .rgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:12px}
+  .ri{background:var(--surface2);border-radius:7px;padding:11px}
+  .ril{font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px}
+  .riv{font-family:var(--sans);font-size:20px;font-weight:700}
+  .sbg{height:3px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:5px}
+  .sf{height:100%;border-radius:2px;transition:width .8s cubic-bezier(.4,0,.2,1)}
+  .abox{background:rgba(108,99,255,.07);border:1px solid rgba(108,99,255,.18);border-radius:7px;padding:12px;color:var(--text-mid);line-height:1.6}
+  .qcard{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;display:none}
+  .qcard.v{display:block}
+  .qinner{display:flex;gap:18px;align-items:flex-start}
+  .qimgw{background:white;border-radius:7px;padding:9px;flex-shrink:0}
+  .qimgw img{display:block;width:130px;height:130px}
+  .qbadge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:9px}
+  .qbvip{background:rgba(255,209,102,.15);color:var(--gold);border:1px solid rgba(255,209,102,.3)}
+  .qbgold{background:rgba(255,209,102,.1);color:var(--gold);border:1px solid rgba(255,209,102,.2)}
+  .qdata{font-size:11px;color:var(--text-dim);line-height:1.9}
+  .qdata strong{color:var(--text-mid)}
+  .clist{display:flex;flex-direction:column;gap:7px;max-height:240px;overflow-y:auto}
+  .crow{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:9px 12px;display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;font-size:12px}
+  .cname{font-weight:500}.cemail{color:var(--text-dim);font-size:11px}
+  .logbox{background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:10px;font-size:11px;max-height:130px;overflow-y:auto}
+  .le{padding:2px 0;color:var(--text-dim)}.le.i{color:var(--accent)}.le.s{color:var(--green)}.le.e{color:var(--red)}.le.w{color:var(--gold)}
+  .spin{display:inline-block;width:11px;height:11px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:sp .6s linear infinite;vertical-align:middle;margin-right:5px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .empty{text-align:center;padding:24px 16px;color:var(--text-dim);font-size:12px}
+  .cs{color:var(--text-mid)}.csv{color:#c0c0d0}.csg{color:var(--gold)}.csp{color:#a0e4ff}
+  .rl{color:var(--green)}.rm{color:var(--gold)}.rh{color:#ff9f43}.rc{color:var(--red)}
+  ::-webkit-scrollbar{width:4px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="logo">Client<span>Intel</span> <span style="font-size:11px;font-weight:400;color:var(--text-dim)">+ QR Platform</span></div>
+  <div style="display:flex;align-items:center;gap:7px;margin-left:auto;">
+    <div class="dot"></div><div class="online">Система активна</div>
+  </div>
+</header>
+
+<div class="main">
+<div class="lp">
+  <div>
+    <div class="plabel">Статус сервисов</div>
+    <div class="badges">
+      <div class="badge wait" id="bc"><div class="bdot"></div>Client API</div>
+      <div class="badge wait" id="bq"><div class="bdot"></div>QR API</div>
+    </div>
+  </div>
+  <div class="hr"></div>
+  <div>
+    <div class="plabel">Данные клиента</div>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;">
+        <div class="fg"><div class="fl">Имя</div><input id="fn" value="Иван"></div>
+        <div class="fg"><div class="fl">Фамилия</div><input id="ln" value="Петров"></div>
+      </div>
+      <div class="fg"><div class="fl">Email</div><input id="em" type="email" value="ivan@example.com"></div>
+      <div class="fg"><div class="fl">Баланс (₽)</div><input id="bal" type="number" value="75000"></div>
+      <div class="fg"><div class="fl">Возраст аккаунта (дней, макс 120)</div><input id="age" type="number" value="90" min="0" max="120"></div>
+      <label class="cbrow"><input type="checkbox" id="odp"><span style="color:var(--text-mid)">Просроченные платежи</span></label>
+    </div>
+  </div>
+  <div class="hr"></div>
+  <div>
+    <div class="plabel">QR-приглашение (API одногруппника)</div>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <div class="fg"><div class="fl">Тип мероприятия</div>
+        <select id="ev">
+          <option value="vip">VIP Банкет</option>
+          <option value="conf">Конференция</option>
+          <option value="pres">Презентация продукта</option>
+          <option value="net">Networking Event</option>
+        </select>
+      </div>
+      <div class="fg"><div class="fl">Условие генерации QR</div>
+        <select id="cond">
+          <option value="2">Gold и выше</option>
+          <option value="1">Silver и выше</option>
+          <option value="0">Все клиенты</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <div class="hr"></div>
+  <div>
+    <button class="btn btnp" id="btnrun" onclick="run()">&#9654; Запустить анализ + QR</button>
+    <button class="btn btns" onclick="save()">+ Сохранить клиента</button>
+    <button class="btn btns" onclick="loadList()">&#8635; Список клиентов</button>
+  </div>
+</div>
+
+<div class="rp">
+  <!-- Flow -->
+  <div class="fcard">
+    <div class="stitle">Схема интеграции</div>
+    <div class="frow">
+      <div class="fnode" id="f0">Пользователь</div>
+      <div class="farrow">&#8594;</div>
+      <div class="fnode" id="f1">Платформа</div>
+      <div class="farrow">&#8594;</div>
+      <div class="fnode" id="f2">Client API<br><span style="font-size:10px;color:var(--text-dim)">/analyze</span></div>
+      <div class="farrow">&#8594;</div>
+      <div class="fnode" id="f3">Логика<br><span style="font-size:10px;color:var(--text-dim)">Gold?</span></div>
+      <div class="farrow">&#8594;</div>
+      <div class="fnode" id="f4">QR API<br><span style="font-size:10px;color:var(--text-dim)">qrserver.com</span></div>
+      <div class="farrow">&#8594;</div>
+      <div class="fnode" id="f5">Результат</div>
+    </div>
+    <div style="font-size:11px;color:var(--text-dim);line-height:1.7;">
+      Платформа отправляет данные клиента в <strong style="color:var(--text-mid)">Client Management API</strong> для анализа.
+      Если категория <strong style="color:var(--gold)">Gold</strong> или <strong style="color:#a0e4ff">Platinum</strong> —
+      платформа обращается к <strong style="color:var(--text-mid)">QR Service API</strong> одногруппника
+      и генерирует персональное QR-приглашение на мероприятие.
+    </div>
+  </div>
+
+  <!-- Analysis -->
+  <div>
+    <div class="stitle">Результат анализа (Client API)</div>
+    <div class="rcard" id="rc">
+      <div class="rgrid">
+        <div class="ri"><div class="ril">Балл</div><div class="riv" id="sc" style="color:var(--accent)">—</div><div class="sbg"><div class="sf" id="sb" style="width:0%;background:var(--accent)"></div></div></div>
+        <div class="ri"><div class="ril">Категория</div><div class="riv" id="cat">—</div></div>
+        <div class="ri"><div class="ril">Уровень риска</div><div class="riv" id="risk">—</div></div>
+      </div>
+      <div class="abox" id="adv"></div>
+    </div>
+    <div class="empty" id="er">Заполните форму и нажмите «Запустить анализ»</div>
+  </div>
+
+  <!-- QR -->
+  <div>
+    <div class="stitle">QR-приглашение (QR Service API)</div>
+    <div class="qcard" id="qc">
+      <div class="qinner">
+        <div class="qimgw"><img id="qi" src="" alt="QR"></div>
+        <div>
+          <div class="qbadge qbvip" id="qb">VIP Приглашение</div>
+          <div class="qdata" id="qd"></div>
+        </div>
+      </div>
+    </div>
+    <div class="empty" id="eq">QR генерируется автоматически для клиентов Gold и выше</div>
+  </div>
+
+  <!-- Clients -->
+  <div>
+    <div class="stitle">База клиентов</div>
+    <div class="clist" id="cl"><div class="empty">Нажмите «Список клиентов»</div></div>
+  </div>
+
+  <!-- Log -->
+  <div>
+    <div class="stitle">Лог запросов</div>
+    <div class="logbox" id="lb"><div class="le i">// Платформа инициализирована</div></div>
+  </div>
+</div>
+</div>
+
+<script>
+const CAPI='http://localhost:8080';
+const QAPI='https://api.qrserver.com/v1/create-qr-code';
+const CATS=['Standard','Silver','Gold','Platinum'];
+const CCLS=['cs','csv','csg','csp'];
+const BCLR=['#6b6b80','#c0c0d0','#ffd166','#a0e4ff'];
+const RISKS=['Low','Medium','High','Critical'];
+const RCLS=['rl','rm','rh','rc'];
+const EVNAMES={vip:'VIP Банкет',conf:'Конференция',pres:'Презентация продукта',net:'Networking Event'};
+
+function log(m,t='i'){
+  const b=document.getElementById('lb');
+  const e=document.createElement('div');
+  e.className='le '+t;
+  e.textContent='['+new Date().toLocaleTimeString('ru')+'] '+m;
+  b.appendChild(e); b.scrollTop=b.scrollHeight;
+}
+
+function flow(s){
+  for(let i=0;i<=5;i++){
+    const n=document.getElementById('f'+i);
+    n.classList.remove('active','done');
+    if(i<s) n.classList.add('done');
+    else if(i===s) n.classList.add('active');
+  }
+}
+
+async function checkApis(){
+  try{
+    const r=await fetch(CAPI+'/api/clients',{signal:AbortSignal.timeout(3000)});
+    document.getElementById('bc').className='badge '+(r.ok?'ok':'err');
+    log('Client API: '+(r.ok?'доступен':'ошибка'),r.ok?'s':'e');
+  }catch{
+    document.getElementById('bc').className='badge err';
+    log('Client API: недоступен — запустите dotnet run','w');
+  }
+  try{
+    const r=await fetch(QAPI+'/?size=10x10&data=test',{signal:AbortSignal.timeout(4000)});
+    document.getElementById('bq').className='badge '+(r.ok?'ok':'err');
+    log('QR Service API: '+(r.ok?'доступен':'ошибка'),r.ok?'s':'e');
+  }catch{
+    document.getElementById('bq').className='badge err';
+    log('QR API: недоступен','e');
+  }
+}
+
+async function run(){
+  const btn=document.getElementById('btnrun');
+  btn.disabled=true; btn.innerHTML='<span class="spin"></span>Обработка...';
+  const req={
+    firstName:document.getElementById('fn').value.trim(),
+    lastName:document.getElementById('ln').value.trim(),
+    email:document.getElementById('em').value.trim(),
+    balance:parseFloat(document.getElementById('bal').value)||0,
+    accountAgeDays:Math.min(120,parseInt(document.getElementById('age').value)||0),
+    status:0,
+    hasOverduePayments:document.getElementById('odp').checked
+  };
+  flow(1); log('Запуск: '+req.firstName+' '+req.lastName);
+  await sl(300); flow(2);
+  log('POST '+CAPI+'/api/clients/analyze');
+  let d=null;
+  try{
+    const r=await fetch(CAPI+'/api/clients/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(req)});
+    if(r.ok){d=await r.json(); log('score='+d.score+', cat='+CATS[d.category]+', risk='+RISKS[d.risk],'s');}
+    else{const e=await r.json(); log('Ошибка: '+JSON.stringify(e.errors||e),'e'); done(btn); return;}
+  }catch(e){
+    log('Client API недоступен: '+e.message,'e');
+    d={score:65,category:2,risk:0,advice:'Предложить Gold-пакет с повышенным кешбэком'};
+    log('Демо: score=65, Gold','w');
+  }
+  await sl(300); flow(3); showRes(d);
+  const minCat=parseInt(document.getElementById('cond').value);
+  const doQr=d.category>=minCat;
+  log('Бизнес-логика: QR='+(doQr?'да':'нет')+' (категория '+CATS[d.category]+')');
+  await sl(400);
+  if(doQr){flow(4); await genQr(req,d); await sl(300);}
+  else{
+    document.getElementById('qc').classList.remove('v');
+    document.getElementById('eq').style.display='block';
+    document.getElementById('eq').textContent='Категория '+CATS[d.category]+' — QR не выдаётся';
+    log('QR не генерируется: категория ниже порога','w');
+  }
+  flow(5); log('Пайплайн завершён','s'); done(btn);
+}
+
+function showRes(d){
+  document.getElementById('sc').textContent=d.score;
+  document.getElementById('sb').style.width=d.score+'%';
+  document.getElementById('sb').style.background=BCLR[d.category]||'#6c63ff';
+  const c=document.getElementById('cat'); c.textContent=CATS[d.category]||d.category; c.className='riv '+CCLS[d.category];
+  const rk=document.getElementById('risk'); rk.textContent=RISKS[d.risk]||d.risk; rk.className='riv '+RCLS[d.risk];
+  document.getElementById('adv').textContent=d.advice||'—';
+  document.getElementById('rc').classList.add('v');
+  document.getElementById('er').style.display='none';
+}
+
+async function genQr(c,a){
+  const ev=document.getElementById('ev').value;
+
+  // Ссылка на встречу — вшивается в QR-код
+  const MEETING_URL = 'https://telemost.360.yandex.ru/j/3093999405';
+
+  log('GET QR API — '+c.firstName+' ('+CATS[a.category]+') → '+MEETING_URL);
+  const url=QAPI+'/?size=130x130&data='+encodeURIComponent(MEETING_URL)+'&color=0-0-0&bgcolor=255-255-255&ecc=M';
+  document.getElementById('qi').src=url;
+  document.getElementById('qi').onload=()=>log('QR получен (ссылка на встречу)','s');
+  const b=document.getElementById('qb');
+  b.textContent=a.category>=3?'Platinum VIP':'Gold Member';
+  b.className='qbadge '+(a.category>=3?'qbvip':'qbgold');
+  document.getElementById('qd').innerHTML=
+    '<strong>Гость:</strong> '+c.firstName+' '+c.lastName+'<br>'+
+    '<strong>Email:</strong> '+c.email+'<br>'+
+    '<strong>Категория:</strong> <span class="'+CCLS[a.category]+'">'+CATS[a.category]+'</span><br>'+
+    '<strong>Мероприятие:</strong> '+EVNAMES[ev]+'<br>'+
+    '<strong>Балл:</strong> '+a.score+'/100<br>'+
+    '<strong>Ссылка:</strong> <a href="'+MEETING_URL+'" target="_blank" style="color:var(--gold);font-size:10px">Открыть встречу</a>';
+  document.getElementById('qc').classList.add('v');
+  document.getElementById('eq').style.display='none';
+}
+
+async function save(){
+  const req={firstName:document.getElementById('fn').value.trim(),lastName:document.getElementById('ln').value.trim(),email:document.getElementById('em').value.trim(),balance:parseFloat(document.getElementById('bal').value)||0,accountAgeDays:Math.min(120,parseInt(document.getElementById('age').value)||0),status:0,hasOverduePayments:document.getElementById('odp').checked};
+  log('POST /api/clients — '+req.firstName);
+  try{
+    const r=await fetch(CAPI+'/api/clients',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(req)});
+    if(r.status===201){const d=await r.json(); log('Сохранён ID='+d.id+', '+CATS[d.category],'s'); loadList();}
+    else{const e=await r.json(); log('Ошибка: '+JSON.stringify(e.errors||e),'e');}
+  }catch(e){log('Ошибка: '+e.message,'e');}
+}
+
+async function loadList(){
+  log('GET /api/clients');
+  const cl=document.getElementById('cl');
+  try{
+    const r=await fetch(CAPI+'/api/clients');
+    const data=await r.json();
+    log('Загружено: '+data.length,'s');
+    if(!data.length){cl.innerHTML='<div class="empty">Список пуст</div>';return;}
+    const cc=['var(--text-dim)','#c0c0d0','var(--gold)','#a0e4ff'];
+    const rc=['var(--green)','var(--gold)','#ff9f43','var(--red)'];
+    cl.innerHTML=data.map(c=>'<div class="crow"><div><div class="cname">'+c.firstName+' '+c.lastName+'</div><div class="cemail">'+c.email+' · &#8381;'+(c.balance||0).toLocaleString('ru')+'</div></div><div style="color:'+cc[c.category]+';font-size:11px">'+CATS[c.category]+'</div><div style="color:'+rc[c.risk]+';font-size:11px">'+RISKS[c.risk]+'</div></div>').join('');
+  }catch(e){log('Ошибка: '+e.message,'e');cl.innerHTML='<div class="empty" style="color:var(--red)">API недоступен</div>';}
+}
+
+function done(b){b.disabled=false;b.innerHTML='&#9654; Запустить анализ + QR';}
+const sl=ms=>new Promise(r=>setTimeout(r,ms));
+
+checkApis();
+</script>
+</body>
+</html>
